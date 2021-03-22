@@ -1,0 +1,28 @@
+ img {
+    padding: 30px;
+    width: 300px;
+    
+
+
+}
+
+h2 {
+    font-size: 20px;
+    font-weight: bold;
+    text-align: left;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+p {
+    font-size: 15px;
+    font-weight: bolder;
+    text-align: center;
+    width: 350px;
+    margin-top: 20px;
+    
+}
+select {
+    height: 30px;
+    margin: 15px;
+}
