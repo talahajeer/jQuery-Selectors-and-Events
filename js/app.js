@@ -1,14 +1,13 @@
 'use strict';
 
-let page1 = $('main').append("button");
-console.log(page1);
-
-function Horn(image_url, title, description, keyword, horns) {
+let id = 0;
+function Horn(image_url, title, description, keyword, horns, id) {
     this.image_url = image_url;
     this.title = title;
     this.description = description;
     this.keyword = keyword;
     this.horns = horns;
+    this.id = id;
     hornArr.push(this);
 }
 
@@ -19,9 +18,11 @@ Horn.prototype.render = function () {
     templete.find('img').attr('src', this.image_url);
     templete.find('p').text(this.description);
     templete.removeAttr('id');
+    templete.attr('id', id);
 }
 const hornArr = [];
 const keywordArr = [];
+const sortArr = ["Sort By", "No Of horns", "A-Z", "Z-A"];
 
 let dropDown = $('select');
 
@@ -34,7 +35,8 @@ function getHornData() {
 
     $.ajax('data/page-1.json', ajaxSettings).then(data => {
         data.forEach(value => {
-            let hornObject = new Horn(value.image_url, value.title, value.description, value.keyword, value.horns);
+            id++;
+            let hornObject = new Horn(value.image_url, value.title, value.description, value.keyword, value.horns, id);
             // console.log(hornObject);
             hornObject.render();
             if (!keywordArr.includes(value.keyword)) {
@@ -53,17 +55,65 @@ $('document').ready(getHornData);
 $('document').ready(function () {
     $('select').on('change', function () {
         // console.log($(this));
+        $('div').hide();
         let selection = $(this).val();
-        if (selection !== 'filter by keyword') {
-            hornArr.forEach(value => {
+
+        hornArr.forEach(value => {
+            if (selection !== 'default') {
                 if (selection === value.keyword) {
-                    // console.log(value);
-                    value.render();
+                    // console.log(value.id);
+                    $('#' + value.id).show();
+                    // console.log(selection);
                 }
-            });
-        }
+            } else {
+                console.log(selection);
+                value.render();
+                $("#photo-template").show();
+            }
+        });
+
     });
 });
 
 
+$('header').append("<select></select>");
 
+$("select").last().attr("id", "sort");
+let sortList = $("#sort");
+// console.log(sortList);
+sortArr.forEach(key => {
+    let option = $(`<option></option>`).val(key).html(key);
+    sortList.append(option);
+});
+
+
+$('#sort').on('change', function () {
+    $('div').hide();
+    let selection = $(this).val();
+    console.log(selection);
+
+
+    if (selection === "No Of horns") {
+        hornArr.sort((a, b) => a.horns - b.horns);
+        console.log(hornArr);
+        hornArr.forEach(value => {
+            console.log(value.id);
+            $('#' + value.id).show();
+        })
+
+    } else if (selection === "A-Z") {
+        hornArr.sort((a, b) => a.title < b.title ? -1 : 1);
+        // console.log(hornArr);
+        hornArr.forEach(value => {
+            console.log(value.title);
+            $('#' + value.id).show();
+        })
+
+    } else if (selection === "Z-A") {
+        hornArr.sort((a, b) => b.title < a.title ? -1 : 1);
+        hornArr.forEach(value => {
+            console.log(value.title);
+            $('#' + value.id).show();
+        })
+    }
+});
