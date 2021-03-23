@@ -85,6 +85,46 @@ sortArr.forEach(key => {
     let option = $(`<option></option>`).val(key).html(key);
     sortList.append(option);
 });
+    $("select").last().attr("id", "sort");
+    let sortList = $("#sort");
+    // console.log(sortList);
+    sortArr.forEach(key => {
+        let option = $(`<option></option>`).val(key).html(key);
+        sortList.append(option);
+    });
+
+    
+$('#sort').on('change', function () {
+    $('div').hide();
+    let selection = $(this).val();
+    console.log(selection);
+
+
+    if (selection === "No Of horns") {
+        hornArr.sort((a, b) => a.horns - b.horns);
+        console.log(hornArr);
+        hornArr.forEach(value => {
+            console.log(value.id);
+            $('#' + value.id).show();
+        })
+
+    } else if (selection === "A-Z") {
+        hornArr.sort((a, b) => a.title < b.title ? -1 : 1);
+        // console.log(hornArr);
+        hornArr.forEach(value => {
+            console.log(value.title);
+            $('#' + value.id).show();
+        })
+
+    } else if (selection === "Z-A") {
+        hornArr.sort((a, b) => b.title < a.title ? -1 : 1);
+        hornArr.forEach(value => {
+            console.log(value.title);
+            $('#' + value.id).show();
+        })
+    }
+});
+
 
 
 $('#sort').on('change', function () {
