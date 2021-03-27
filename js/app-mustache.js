@@ -1,52 +1,164 @@
 'use strict';
+$('document').ready(function () {
 
-let id = 0;
-const hornArr = [];
-const keywordArr = [];
-let dropDown = $('select');
-let mTemplate = $("<template></template>");
-// console.log(mTemplate);
-mTemplate.appendTo($("main")).attr("id", "mTemplate").attr("type", "text/x-tmpl-mustache");
-$("#mTemplate").append("<h2></h2> <img></img> <p></p>");
-$("h2").html("{{title}}");
-$("img").attr("src", "{{{image_url}}}");
-$("p").html("{{description}}");
+    let ajaxSettings = {
+        method: 'get',
+        dataType: 'json'
+    }
 
-function Horn(image_url, title, description, keyword, horns, id) {
-    this.image_url = image_url;
-    this.title = title;
-    this.description = description;
-    this.keyword = keyword;
-    this.horns = horns;
-    this.id = id;
-    hornArr.push(this);
-}
 
-Horn.prototype.toHtml = function () {
-    let template = $('#mTemplate').html();
-    // console.log(template);
-    let html = Mustache.render(template, this);
-    return html;
-}
+    let arrayForKey = [];
+    Horns.all = [];
 
-function getHornData() {
-const ajaxSettings = {
-    method: 'get',
-    dataType: 'json'
-}
-$.ajax('data/page-2.json', ajaxSettings).then(data => {
-    data.forEach(value => {
-        id++;
-        let hornObject = new Horn(value.image_url, value.title, value.description, value.keyword, value.horns, id);
-        hornObject.toHtml();
-        if (!keywordArr.includes(value.keyword)) {
-            keywordArr.push(value.keyword);
-        }
-    });
-    keywordArr.forEach(key => {
-        let option = $('<option></option>').val(key).html(key);
-        dropDown.append(option);
-    });
+    function Horns(horn) {
+        this.title = horn.title;
+        this.description = horn.description;
+        this.image_url = horn.image_url;
+        this.keyword = horn.keyword;
+        this.horns = horn.horns;
+        Horns.all.push(this);
+    }
+
+
+    Horns.prototype.toRender = function () {
+        let templateOne = $('#template').html();
+        let html = Mustache.render(templateOne, this);
+        $('main').append(html);
+
+    }
+
+    function render() {
+        Horns.all.forEach(obj => {
+            obj.toRender();
+        })
+    }
+
+
+
+
+
+
+
+    function refreshTheSection() {
+        $('section').remove();
+        $("section").append(
+            `<template id="template" type="text/x-tmpl-mustache">
+            <section class="{{keyword}}">
+            <h2> {{title}} #{{horns}} </h2>
+            <img src="{{image_url}}" alt=""> </img>
+            <p> {{description}} </p> 
+        </section>
+        </template>`
+        )
+    }
+
+
+    function removeTheSelections() {
+
+        $('select').empty();
+        $('select').append(
+            `<option value = "default"> Default </option>`
+        )
+
+    }
+
+
+
+
+
+    function renderAjax(num) {
+        refreshTheSection();
+        arrayForKey = [];
+        Horns.all = [];
+        removeTheSelections();
+
+        $.ajax(`data/page-${num}.json`, ajaxSettings).then((data) => {
+            data.forEach((horn, i) => {
+                let newHorn = new Horns(horn);
+                newHorn.toRender();
+
+                if (!arrayForKey.includes(Horns.all[i].keyword)) {
+                    arrayForKey.push(Horns.all[i].keyword)
+                    $('select').append(
+                        `<option value = "${horn.keyword}"> ${horn.keyword} </option>`
+                    )
+                }
+            })
+
+
+        })
+
+
+    }
+
+
+
+
+    function grabTheValue() {
+        $('input').on('click', function () {
+            $(`input`).attr('checked', false)
+            refreshTheSection();
+
+            let value = $(this).val();
+            sort(value);
+            $(`#${value}`).attr("checked", true)
+        })
+
+    }
+
+    function sort(value) {
+        Horns.all.sort(function (a, b) {
+            if (a[value] < b[value]) {
+                return -1;
+
+            } else if (b[value] < a[value]) {
+                return 1;
+            }
+        })
+        render();
+    }
+
+    function clickOnPage() {
+        $('button').on("click", function () {
+            let id = $(this).attr('id');
+            renderAjax(id);
+        })
+    }
+
+    function grabTheKeyWord() {
+        $('select').on("click", function () {
+            let selectedKeyword = $(this).val();
+            filterBasedOnKeyWord(selectedKeyword)
+        })
+    }
+
+
+
+    function filterBasedOnKeyWord(keyword) {
+        Horns.all.forEach(horn => {
+
+            if (keyword !== "default") {
+
+                if (keyword !== horn.keyword) {
+                    $(`.${horn.keyword}`).addClass("remove")
+                } else {
+                    $(`.${horn.keyword}`).removeClass("remove")
+                }
+            }
+
+        })
+
+
+    }
+
+
+    grabTheValue();
+    clickOnPage();
+    renderAjax(1);
+    grabTheKeyWord()
+
+
+
+
+
 })
-}
-$("document").ready(getHornData);
